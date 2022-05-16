@@ -1,0 +1,45 @@
+<?php
+
+namespace App\Http\Controllers\API;
+
+use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
+use App\Models\Zipcode;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\DB;
+
+class ZipcodeControlle extends Controller
+{
+    /**
+     * Display the specified resource.
+     *
+     * @param  int  $zip_code
+     * @return \Illuminate\Http\Response
+     */
+    public function show($zip_code)
+    {
+        $zipcode = DB::table('zipcodes')->where('d_codigo','=',$zip_code)->first();
+
+        return response() -> json([
+            'zip_code' => (string)sprintf("%05d", $zipcode->d_codigo),
+            'locality' => Str::upper(Str::ascii($zipcode->d_ciudad)),
+            'federal_entity' => [
+                'key' => $zipcode->c_estado,
+                'name' => Str::upper(Str::ascii($zipcode->d_estado)),
+                'code' => $zipcode->c_CP
+            ],
+            'settlements' => [[
+                'key' => $zipcode->id_asenta_cpcons,
+                'name' => Str::upper(Str::ascii($zipcode->d_asenta)),
+                'zone_type' => Str::upper(Str::ascii($zipcode->d_zona)),
+                'settlement_type' => [
+                    'name' => Str::ascii($zipcode->d_tipo_asenta)
+                ]
+            ]],
+            'municipality' => [
+                'key' => $zipcode->c_mnpio,
+                'name' => Str::upper(Str::ascii($zipcode->D_mnpio))
+            ]
+        ]);
+    }
+}
